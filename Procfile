@@ -1,1 +1,1 @@
-web: java -jar target/BotBadger-1.0-SNAPSHOT.jar
+web: java -jar -Dserver.port=$PORT target/BotBadger-1.0-SNAPSHOT.jar
