@@ -12,6 +12,8 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import javax.security.auth.login.LoginException;
 
 public class Bot extends ListenerAdapter {
+    private static Summoner summoner;
+
     public static void main(String[] args) throws LoginException {
         String token = System.getenv("TOKEN");
 
@@ -20,29 +22,23 @@ public class Bot extends ListenerAdapter {
                 .setActivity(Activity.watching("you"))
                 .build();
 
+        summoner = new Summoner();
+
         // This can take up to 1 hour to show up in the client
-        jda.upsertCommand("ping", "Calculate ping of the bot").queue();
+//        jda.upsertCommand("ping", "Calculate ping of the bot").queue();
+        jda.upsertCommand("summon-heroes", "Performs a 10x summon").queue();
     }
 
     @Override
     public void onSlashCommand(SlashCommandEvent event)
     {
-        if (!event.getName().equals("ping")) return; // make sure we handle the right command
-        long time = System.currentTimeMillis();
+        if (!event.getName().equals("summon-heroes")) return; // make sure we handle the right command
 
         EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Pong");
+        eb.setTitle("10x Summon Result");
+        eb.setDescription(summoner.getSummonResult());
 
-        event.replyEmbeds(eb.build()).queue(response -> {
-            EmbedBuilder eb2 = new EmbedBuilder();
-            eb2.setTitle("Pong");
-            eb2.setDescription(String.format("Time taken %d ms", System.currentTimeMillis() - time));
-            response.editOriginalEmbeds(eb2.build()).queue();
-        });
-//        event.reply("Pong!").setEphemeral(false) // reply or acknowledge
-//                .flatMap(v ->
-//                        event.getHook().editOriginalFormat("Pong: %d ms", System.currentTimeMillis() - time) // then edit original
-//                ).queue(); // Queue both reply and edit
+        event.replyEmbeds(eb.build()).queue();
     }
 
     @Override
