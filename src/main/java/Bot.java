@@ -2,10 +2,12 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
@@ -38,9 +40,23 @@ public class Bot extends ListenerAdapter {
 
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("10x Summon Result");
-        eb.setDescription(summoner.getSummonResult());
+        eb.setDescription(String.format("Total summons: 10%n%s", summoner.getSummonResult()));
 
-        event.replyEmbeds(eb.build()).queue();
+        event.replyEmbeds(eb.build()).addActionRow(Button.primary("reroll", "Roll again")).queue();
+    }
+
+    @Override
+    public void onButtonClick(ButtonClickEvent event) {
+        if (event.getComponentId().equals("reroll")) {
+            int previousTotal = Integer.parseInt(event.getMessage().getEmbeds().get(0).getDescription().split("\\s+")[2]);
+            int newTotal = previousTotal + 10;
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("10x Summon Result");
+            eb.setDescription(String.format("Total summons: %d%n%s", newTotal, summoner.getSummonResult()));
+
+            event.editMessageEmbeds(eb.build()).queue();
+        }
     }
 
     @Override
