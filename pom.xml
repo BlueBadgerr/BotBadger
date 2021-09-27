@@ -9,13 +9,6 @@
     <name>BotBadger</name>
     <version>1.0-SNAPSHOT</version>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.0.RELEASE</version>
-        <relativePath/>
-    </parent>
-
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
@@ -40,19 +33,22 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <configuration>
+                    <transformers>
+                        <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                            <mainClass>Bot</mainClass>
+                        </transformer>
+                    </transformers>
+                </configuration>
                 <executions>
                     <execution>
+                        <phase>package</phase>
                         <goals>
-                            <goal>build-info</goal>
+                            <goal>shade</goal>
                         </goals>
-                        <configuration>
-                            <additionalProperties>
-                                <java.source>${maven.compiler.source}</java.source>
-                                <java.target>${maven.compiler.target}</java.target>
-                            </additionalProperties>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
