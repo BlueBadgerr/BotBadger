@@ -28,7 +28,9 @@ public class Bot extends ListenerAdapter {
         summoner = new Summoner();
 
         // This can take up to 1 hour to show up in the client
-        jda.updateCommands().addCommands(new CommandData("summon-heroes", "Performs a 10x summon"));
+        jda.updateCommands()
+                .addCommands(new CommandData("summon-heroes", "Performs a 10x summon"))
+                .queue();
     }
 
     @Override
