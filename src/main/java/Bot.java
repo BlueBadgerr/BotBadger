@@ -7,9 +7,11 @@ import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
+import java.net.Socket;
 
 public class Bot extends ListenerAdapter {
     private static Summoner summoner;
@@ -22,11 +24,11 @@ public class Bot extends ListenerAdapter {
                 .setActivity(Activity.watching("you"))
                 .build();
 
+        // Bot action classes
         summoner = new Summoner();
 
         // This can take up to 1 hour to show up in the client
-//        jda.upsertCommand("ping", "Calculate ping of the bot").queue();
-        jda.upsertCommand("summon-heroes", "Performs a 10x summon").queue();
+        jda.updateCommands().addCommands(new CommandData("summon-heroes", "Performs a 10x summon"));
     }
 
     @Override
@@ -44,17 +46,18 @@ public class Bot extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event)
     {
-        Message msg = event.getMessage();
-        if (msg.getContentRaw().equals("!ping"))
-        {
-            MessageChannel channel = event.getChannel();
-            long time = System.currentTimeMillis();
-
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Pong");
-            eb.setDescription("HAHAHAHA");
-
-            channel.sendMessageEmbeds(eb.build()).queue();
-        }
+        // Do nothing for now
+//        Message msg = event.getMessage();
+//        if (msg.getContentRaw().equals("!ping"))
+//        {
+//            MessageChannel channel = event.getChannel();
+//            long time = System.currentTimeMillis();
+//
+//            EmbedBuilder eb = new EmbedBuilder();
+//            eb.setTitle("Pong");
+//            eb.setDescription("HAHAHAHA");
+//
+//            channel.sendMessageEmbeds(eb.build()).queue();
+//        }
     }
 }
