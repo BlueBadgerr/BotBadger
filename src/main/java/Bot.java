@@ -34,34 +34,29 @@ public class Bot extends ListenerAdapter {
     }
 
     @Override
-    public void onSlashCommand(SlashCommandEvent event)
-    {
-        if (!event.getName().equals("summon-heroes")) return; // make sure we handle the right command
-
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("10x Summon Result");
-        eb.setDescription(String.format("Total summons: 10%n%s", summoner.getSummonResult()));
-
-        event.replyEmbeds(eb.build()).addActionRow(Button.primary("reroll", "Roll again")).queue();
-    }
-
-    @Override
-    public void onButtonClick(ButtonClickEvent event) {
-        if (event.getComponentId().equals("reroll")) {
-            int previousTotal = Integer.parseInt(event.getMessage().getEmbeds().get(0).getDescription().split("\\s+")[2]);
-            int newTotal = previousTotal + 10;
-
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("10x Summon Result");
-            eb.setDescription(String.format("Total summons: %d%n%s", newTotal, summoner.getSummonResult()));
-
-            event.editMessageEmbeds(eb.build()).queue();
+    public void onSlashCommand(SlashCommandEvent event) {
+        switch (event.getName()) {
+            case "summon-heroes":
+                summoner.onSlashCommand(event);
+                break;
+            default:
+                System.out.printf("Unknown slash command %s%n", event.getName());
         }
     }
 
     @Override
-    public void onMessageReceived(MessageReceivedEvent event)
-    {
+    public void onButtonClick(ButtonClickEvent event) {
+        switch (event.getComponentId()) {
+            case "reroll":
+                summoner.onButtonClick(event);
+                break;
+            default:
+                System.out.printf("Unknown button press %s%n", event.getComponentId());
+        }
+    }
+
+    @Override
+    public void onMessageReceived(MessageReceivedEvent event) {
         // Do nothing for now
 //        Message msg = event.getMessage();
 //        if (msg.getContentRaw().equals("!ping"))

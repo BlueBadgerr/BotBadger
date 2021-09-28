@@ -1,3 +1,8 @@
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.components.Button;
+
 import java.util.Random;
 
 public class Summoner {
@@ -18,11 +23,34 @@ public class Summoner {
     private static final int CHANCE_2_STAR = 19_000;
     private static final int TOTAL_PROBABILITY = 100_000;
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     public Summoner() {}
 
-    public String getSummonResult() {
+    public void onSlashCommand(SlashCommandEvent event) {
+        if (event.getName().equals("summon-heroes")) {
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("10x Summon Result");
+            eb.setDescription(String.format("Total summons: 10%n%s", getSummonResult()));
+
+            event.replyEmbeds(eb.build()).addActionRow(Button.primary("reroll", "Roll again")).queue();
+        }
+    }
+
+    public void onButtonClick(ButtonClickEvent event) {
+        if (event.getComponentId().equals("reroll")) {
+            int previousTotal = Integer.parseInt(event.getMessage().getEmbeds().get(0).getDescription().split("\\s+")[2]);
+            int newTotal = previousTotal + 10;
+
+            EmbedBuilder eb = new EmbedBuilder();
+            eb.setTitle("10x Summon Result");
+            eb.setDescription(String.format("Total summons: %d%n%s", newTotal, getSummonResult()));
+
+            event.editMessageEmbeds(eb.build()).queue();
+        }
+    }
+
+    private String getSummonResult() {
         StringBuilder sb = new StringBuilder();
 
         for(int i = 0;  i < 9; i ++) {
