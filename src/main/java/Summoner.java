@@ -70,7 +70,7 @@ public class Summoner {
                     newTotal,
                     newWhiteBoxTotal,
                     summonResult.result));
-            eb.setAuthor(event.getUser().getName());
+            eb.setAuthor(event.getMember().getEffectiveName());
             event.editMessageEmbeds(eb.build()).queue();
         }
     }
