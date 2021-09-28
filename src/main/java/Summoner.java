@@ -1,4 +1,5 @@
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
@@ -23,6 +24,8 @@ public class Summoner {
     private static final int CHANCE_2_STAR = 19_000;
     private static final int TOTAL_PROBABILITY = 100_000;
 
+    private static final String DESCRIPTION_TEMPLATE = "Total summons: %d | Total white box: %d %n%s";
+
     private final Random random = new Random();
 
     public Summoner() {}
@@ -31,33 +34,57 @@ public class Summoner {
         if (event.getName().equals("summon-heroes")) {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("10x Summon Result");
-            eb.setDescription(String.format("Total summons: 10%n%s", getSummonResult()));
 
+            SummonResult summonResult = getSummonResult();
+            eb.setDescription(String.format(DESCRIPTION_TEMPLATE,
+                    10,
+                    summonResult.totalWhiteBox,
+                    summonResult.result));
+
+            eb.setAuthor(event.getMember().getEffectiveName());
             event.replyEmbeds(eb.build()).addActionRow(Button.primary("reroll", "Roll again")).queue();
         }
     }
 
     public void onButtonClick(ButtonClickEvent event) {
         if (event.getComponentId().equals("reroll")) {
-            int previousTotal = Integer.parseInt(event.getMessage().getEmbeds().get(0).getDescription().split("\\s+")[2]);
+            MessageEmbed msg = event.getMessage().getEmbeds().get(0);
+
+            if (!msg.getAuthor().getName().equals(event.getMember().getEffectiveName())) {
+                event.reply("Can't do that. This is not your summon result!").setEphemeral(true).queue();
+                return;
+            }
+
+            String[] extractedString = msg.getDescription().split("\\s+");
+
+            SummonResult summonResult = getSummonResult();
+
+            int previousTotal = Integer.parseInt(extractedString[2]);
+            int previousWhiteBoxTotal = Integer.parseInt(extractedString[7]);
             int newTotal = previousTotal + 10;
+            int newWhiteBoxTotal = previousWhiteBoxTotal + summonResult.totalWhiteBox;
 
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("10x Summon Result");
-            eb.setDescription(String.format("Total summons: %d%n%s", newTotal, getSummonResult()));
-
+            eb.setDescription(String.format(DESCRIPTION_TEMPLATE,
+                    newTotal,
+                    newWhiteBoxTotal,
+                    summonResult.result));
+            eb.setAuthor(event.getUser().getName());
             event.editMessageEmbeds(eb.build()).queue();
         }
     }
 
-    private String getSummonResult() {
+    private SummonResult getSummonResult() {
         StringBuilder sb = new StringBuilder();
+        int totalWhiteBox = 0;
 
         for(int i = 0;  i < 9; i ++) {
             int result = random.nextInt(TOTAL_PROBABILITY);
 
             if (result < CHANCE_3_STAR) {
                 sb.append(String.format("**\\*\\*\\* %s**%n", HERO_3_STAR[random.nextInt(HERO_3_STAR.length)]));
+                totalWhiteBox++;
             } else if (result < CHANCE_3_STAR + CHANCE_2_STAR) {
                 sb.append(String.format("\\*\\* %s%n", HERO_2_STAR[random.nextInt(HERO_2_STAR.length)]));
             } else {
@@ -70,10 +97,20 @@ public class Summoner {
 
         if (result < CHANCE_3_STAR) {
             sb.append(String.format("**\\*\\*\\* %s**%n", HERO_3_STAR[random.nextInt(HERO_3_STAR.length)]));
+            totalWhiteBox++;
         } else {
             sb.append(String.format("\\*\\* %s%n", HERO_2_STAR[random.nextInt(HERO_2_STAR.length)]));
         }
 
-        return sb.toString();
+        SummonResult summonResult = new SummonResult();
+        summonResult.result = sb.toString();
+        summonResult.totalWhiteBox = totalWhiteBox;
+
+        return summonResult;
+    }
+
+    private static class SummonResult {
+        protected String result;
+        protected int totalWhiteBox;
     }
 }
