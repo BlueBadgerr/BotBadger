@@ -1,4 +1,4 @@
-package org.bluebadger;
+package org.bluebadger.summoner;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
