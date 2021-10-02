@@ -44,7 +44,7 @@ public class Summoner {
                     summonResult.result));
 
             eb.setAuthor(event.getMember().getEffectiveName());
-            event.replyEmbeds(eb.build()).addActionRow(Button.primary("reroll", "Roll again")).queue();
+            event.replyEmbeds(eb.build()).addActionRow(Button.primary("summoner-reroll", "Roll again")).queue();
         }
     }
 

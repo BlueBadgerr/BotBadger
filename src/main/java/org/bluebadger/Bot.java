@@ -49,6 +49,9 @@ public class Bot extends ListenerAdapter {
             case "summon-heroes":
                 summoner.onSlashCommand(event);
                 break;
+            case "blackjack":
+                // do nothing for now
+                break;
             default:
                 System.out.printf("Unknown slash command %s%n", event.getName());
         }
@@ -57,7 +60,7 @@ public class Bot extends ListenerAdapter {
     @Override
     public void onButtonClick(ButtonClickEvent event) {
         switch (event.getComponentId()) {
-            case "reroll":
+            case "summoner-reroll":
                 summoner.onButtonClick(event);
                 break;
             default:
