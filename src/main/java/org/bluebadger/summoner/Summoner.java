@@ -27,6 +27,7 @@ public class Summoner {
     private static final int TOTAL_PROBABILITY = 100_000;
 
     private static final String DESCRIPTION_TEMPLATE = "Total summons: %d | Total white box: %d %n%s";
+    private static final String REROLL_BUTTON_ID = "summoner-reroll";
 
     private final Random random = new Random();
 
@@ -44,12 +45,12 @@ public class Summoner {
                     summonResult.result));
 
             eb.setAuthor(event.getMember().getEffectiveName());
-            event.replyEmbeds(eb.build()).addActionRow(Button.primary("summoner-reroll", "Roll again")).queue();
+            event.replyEmbeds(eb.build()).addActionRow(Button.primary(REROLL_BUTTON_ID, "Roll again")).queue();
         }
     }
 
     public void onButtonClick(ButtonClickEvent event) {
-        if (event.getComponentId().equals("reroll")) {
+        if (event.getComponentId().equals(REROLL_BUTTON_ID)) {
             MessageEmbed msg = event.getMessage().getEmbeds().get(0);
 
             if (!msg.getAuthor().getName().equals(event.getMember().getEffectiveName())) {

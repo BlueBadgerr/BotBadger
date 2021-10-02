@@ -59,9 +59,13 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onButtonClick(ButtonClickEvent event) {
-        switch (event.getComponentId()) {
-            case "summoner-reroll":
+        String[] buttonId = event.getComponentId().split("-");
+
+        switch (buttonId[0]) {
+            case "summoner":
                 summoner.onButtonClick(event);
+                break;
+            case "blackjack":
                 break;
             default:
                 System.out.printf("Unknown button press %s%n", event.getComponentId());
