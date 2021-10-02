@@ -8,7 +8,7 @@ public class Database {
         database = new Database(databaseUrl);
     }
 
-    public static Database getDatabase() {
+    public static Database getInstance() {
         return database;
     }
 

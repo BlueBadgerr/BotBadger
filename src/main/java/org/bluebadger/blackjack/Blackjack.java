@@ -28,6 +28,6 @@ public class Blackjack {
     }
 
     public Blackjack() {
-        database = Database.getDatabase();
+        database = Database.getInstance();
     }
 }
