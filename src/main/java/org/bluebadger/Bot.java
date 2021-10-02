@@ -1,7 +1,8 @@
+package org.bluebadger;
+
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
@@ -11,9 +12,7 @@ import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
 import javax.security.auth.login.LoginException;
-import java.net.UnknownServiceException;
 import java.sql.*;
-import java.util.List;
 
 public class Bot extends ListenerAdapter {
     private static final String INSERT_QUERY = "INSERT INTO discord(id, yoru_slap_count) VALUES(?, ?)";
