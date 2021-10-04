@@ -6,6 +6,7 @@ import java.sql.SQLException;
 
 public class Pontoon {
     private final Database database;
+    private Shuffler shuffler = new Shuffler();
 
     public void add(String id) {
         try {
@@ -27,7 +28,13 @@ public class Pontoon {
         return null;
     }
 
+    public String draw() {
+        return shuffler.draw().toString();
+    }
+
     public Pontoon() {
         database = Database.getInstance();
     }
+
+
 }

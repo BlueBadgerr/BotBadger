@@ -84,5 +84,9 @@ public class Bot extends ListenerAdapter {
         if (msg.getContentRaw().equals("get")) {
             channel.sendMessage(pontoon.get(msg.getMember().getUser().getId()).toString()).queue();
         }
+
+        if (msg.getContentRaw().equals("draw")) {
+            channel.sendMessage(pontoon.draw()).queue();
+        }
     }
 }
