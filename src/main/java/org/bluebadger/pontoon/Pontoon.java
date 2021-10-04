@@ -1,10 +1,10 @@
-package org.bluebadger.blackjack;
+package org.bluebadger.pontoon;
 
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
 
-public class Blackjack {
+public class Pontoon {
     private final Database database;
 
     public void add(String id) {
@@ -27,7 +27,7 @@ public class Blackjack {
         return null;
     }
 
-    public Blackjack() {
+    public Pontoon() {
         database = Database.getInstance();
     }
 }
