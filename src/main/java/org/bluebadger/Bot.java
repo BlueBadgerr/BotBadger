@@ -6,6 +6,7 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -14,6 +15,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.bluebadger.pontoon.PontoonTable;
 import org.bluebadger.libraries.Database;
 import org.bluebadger.summoner.Summoner;
+import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.sql.*;
@@ -40,6 +42,7 @@ public class Bot extends ListenerAdapter {
         // This can take up to 1 hour to show up in the client
         jda.updateCommands()
                 .addCommands(new CommandData("summon-heroes", "Performs a 10x summon"))
+                .addCommands(new CommandData("pontoon", "Play a game of Pontoon"))
                 .queue();
     }
 
@@ -71,6 +74,11 @@ public class Bot extends ListenerAdapter {
             default:
                 System.out.printf("Unknown button press %s%n", event.getComponentId());
         }
+    }
+
+    @Override
+    public void onSelectionMenu(SelectionMenuEvent event) {
+        System.out.println(event.getSelectedOptions().get(0).getDescription());
     }
 
     @Override
