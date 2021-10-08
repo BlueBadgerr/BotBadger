@@ -4,8 +4,10 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.Component;
+import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
@@ -16,9 +18,12 @@ public class PontoonTable {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
+    private final List<Component> playerOptionsRow = new ArrayList<>();
+    private final List<Component> joinRow = new ArrayList<>();
 
     private Shuffler shuffler = new Shuffler();
     private Player[] players = new Player[MAX_PLAYERS];
+    private String description = "This is where a pretty picture of the table should go";
 
     // Test only
     public void add(String id) {
@@ -50,32 +55,18 @@ public class PontoonTable {
     public PontoonTable() {
         database = Database.getInstance();
 
+        playerOptionsRow.add(Button.danger("pontoon-hit", "Hit"));
+        playerOptionsRow.add(Button.success("pontoon-stand", "Stand"));
+        playerOptionsRow.add(Button.primary("pontoon-split", "Split"));
+        playerOptionsRow.add(Button.secondary("pontoon-surrender", "Surrender"));
 
+        joinRow.add(Button.primary("pontoon-join", "Join"));
+        joinRow.add(Button.danger("pontoon-leave", "Leave"));
     }
 
     public void onSlashCommand(SlashCommandEvent event) {
         if (event.getName().equals("pontoon")) {
-            EmbedBuilder eb = new EmbedBuilder();
-            eb.setTitle("Pontoon Table");
-            eb.setDescription("This is where a pretty picture of the table should go");
-            // TODO: Display table
-
-            // Build buttons
-            List<Component> playerOptionsRow = new ArrayList<>();
-            playerOptionsRow.add(Button.danger("pontoon-hit", "Hit"));
-            playerOptionsRow.add(Button.success("pontoon-stand", "Stand"));
-            playerOptionsRow.add(Button.primary("pontoon-split", "Split"));
-            playerOptionsRow.add(Button.secondary("pontoon-surrender", "Split"));
-
-            List<Component> joinRow = new ArrayList<>();
-            joinRow.add(Button.success("pontoon-join-1", "Join 1"));
-            joinRow.add(Button.success("pontoon-join-2", "Join 2"));
-            joinRow.add(Button.success("pontoon-join-3", "Join 3"));
-            joinRow.add(Button.success("pontoon-join-4", "Join 4"));
-            joinRow.add(Button.success("pontoon-join-5", "Join 5"));
-            joinRow.add(Button.success("pontoon-join-6", "Join 6"));
-
-            event.replyEmbeds(eb.build())
+            event.replyEmbeds(buildEmbed())
                     .addActionRow(playerOptionsRow)
                     .addActionRow(joinRow)
                     .queue();
@@ -83,6 +74,48 @@ public class PontoonTable {
     }
 
     public void onButtonClick(ButtonClickEvent event) {
+        switch (event.getComponentId()) {
+            case "pontoon-hit":
+                description = "HIT";
+                break;
+            case "pontoon-stand":
+                description = "STAND";
+                break;
+            case "pontoon-split":
+                description = "SPLIT";
+                break;
+            case "pontoon-surrender":
+                description = "SURRENDER";
+                break;
+            case "pontoon-join":
+                description = "JOIN";
+                event.reply("Select a seat to join")
+                        .setEphemeral(true)
+                        .addActionRow(SelectionMenu.create("pontoon-seat-select")
+                                .addOption("1", "1")
+                                .addOption("2", "2")
+                                .addOption("3", "3")
+                                .addOption("4", "4")
+                                .addOption("5", "5")
+                                .addOption("6", "6")
+                                .build())
+                        .queue();
+                break;
+            case "pontoon-leave":
+                description = "LEAVE";
+                break;
+        }
 
+        event.editMessageEmbeds(buildEmbed()).queue();
+    }
+
+    private MessageEmbed buildEmbed() {
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Pontoon Table");
+        eb.setDescription(description);
+        // TODO: Display table
+
+        return eb.build();
     }
 }
