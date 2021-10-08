@@ -89,7 +89,11 @@ public class PontoonTable {
                 break;
             case "pontoon-join":
                 description = "JOIN";
-                event.reply("Select a seat to join")
+                MessageEmbed msg = new EmbedBuilder()
+                        .setTitle("Join Pontoon Table")
+                        .setDescription("Select a seat to join")
+                        .build();
+                event.replyEmbeds(msg)
                         .setEphemeral(true)
                         .addActionRow(SelectionMenu.create("pontoon-seat-select")
                                 .addOption("1", "1")
@@ -106,7 +110,9 @@ public class PontoonTable {
                 break;
         }
 
-        event.editMessageEmbeds(buildEmbed()).queue();
+        if (!event.getComponentId().equals("pontoon-join")) {
+            event.editMessageEmbeds(buildEmbed()).queue();
+        }
     }
 
     private MessageEmbed buildEmbed() {

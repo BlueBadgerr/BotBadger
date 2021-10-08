@@ -1,5 +1,6 @@
 package org.bluebadger;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -78,7 +79,12 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onSelectionMenu(SelectionMenuEvent event) {
-        System.out.println(event.getSelectedOptions().get(0).getDescription());
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("Join Pontoon Table");
+        eb.setDescription(String.format("You have joined seat number %s", event.getValues().get(0)));
+        event.editMessageEmbeds(eb.build())
+                .setActionRow(event.getComponent().asDisabled())
+                .queue();
     }
 
     @Override
