@@ -11,7 +11,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
-import org.bluebadger.pontoon.Pontoon;
+import org.bluebadger.pontoon.PontoonTable;
 import org.bluebadger.libraries.Database;
 import org.bluebadger.summoner.Summoner;
 
@@ -20,7 +20,7 @@ import java.sql.*;
 
 public class Bot extends ListenerAdapter {
     private static Summoner summoner;
-    private static Pontoon pontoon;
+    private static PontoonTable pontoonTable;
 
     public static void main(String[] args) throws LoginException, SQLException {
         String token = System.getenv("TOKEN");
@@ -35,7 +35,7 @@ public class Bot extends ListenerAdapter {
 
         // Bot action classes
         summoner = new Summoner();
-        pontoon = new Pontoon();
+        pontoonTable = new PontoonTable();
 
         // This can take up to 1 hour to show up in the client
         jda.updateCommands()
@@ -50,7 +50,7 @@ public class Bot extends ListenerAdapter {
                 summoner.onSlashCommand(event);
                 break;
             case "blackjack":
-                // do nothing for now
+                pontoonTable.onSlashCommand(event);
                 break;
             default:
                 System.out.printf("Unknown slash command %s%n", event.getName());
@@ -66,6 +66,7 @@ public class Bot extends ListenerAdapter {
                 summoner.onButtonClick(event);
                 break;
             case "blackjack":
+                pontoonTable.onButtonClick(event);
                 break;
             default:
                 System.out.printf("Unknown button press %s%n", event.getComponentId());
@@ -78,15 +79,15 @@ public class Bot extends ListenerAdapter {
         MessageChannel channel = event.getChannel();
 
         if (msg.getContentRaw().equals("add")) {
-            pontoon.add(msg.getMember().getUser().getId());
+            pontoonTable.add(msg.getMember().getUser().getId());
         }
 
         if (msg.getContentRaw().equals("get")) {
-            channel.sendMessage(pontoon.get(msg.getMember().getUser().getId()).toString()).queue();
+            channel.sendMessage(pontoonTable.get(msg.getMember().getUser().getId()).toString()).queue();
         }
 
         if (msg.getContentRaw().equals("draw")) {
-            channel.sendMessage(pontoon.draw()).queue();
+            channel.sendMessage(pontoonTable.draw()).queue();
         }
     }
 }
