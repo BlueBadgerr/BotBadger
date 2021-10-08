@@ -49,7 +49,7 @@ public class Bot extends ListenerAdapter {
             case "summon-heroes":
                 summoner.onSlashCommand(event);
                 break;
-            case "blackjack":
+            case "pontoon":
                 pontoonTable.onSlashCommand(event);
                 break;
             default:
@@ -65,7 +65,7 @@ public class Bot extends ListenerAdapter {
             case "summoner":
                 summoner.onButtonClick(event);
                 break;
-            case "blackjack":
+            case "pontoon":
                 pontoonTable.onButtonClick(event);
                 break;
             default:
