@@ -4,11 +4,11 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
-import net.dv8tion.jda.api.interactions.components.Component;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bluebadger.libraries.Database;
@@ -22,8 +22,7 @@ public class PontoonTable {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
-    private final List<Component> playerOptionsRow = new ArrayList<>();
-    private final List<Component> joinRow = new ArrayList<>();
+    private final List<Button> joinRow = new ArrayList<>();
     private final Queue<String> messages = new CircularFifoQueue<>(3);
 
     private Shuffler shuffler = new Shuffler();
@@ -62,21 +61,15 @@ public class PontoonTable {
     public PontoonTable() {
         database = Database.getInstance();
 
-        playerOptionsRow.add(Button.danger("pontoon-hit", "Hit"));
-        playerOptionsRow.add(Button.success("pontoon-stand", "Stand"));
-        playerOptionsRow.add(Button.primary("pontoon-split", "Split"));
-        playerOptionsRow.add(Button.secondary("pontoon-surrender", "Surrender"));
-
         joinRow.add(Button.primary("pontoon-join", "Join"));
-        joinRow.add(Button.danger("pontoon-leave", "Leave"));
+        joinRow.add(Button.danger("pontoon-leave", "Leave").asDisabled());
     }
 
     public void onSlashCommand(SlashCommandEvent event) {
         if (event.getName().equals("pontoon")) {
             latestHook = event.getHook();
 
-            event.replyEmbeds(buildMainEmbed(), buildMessageEmbed())
-                    .addActionRow(playerOptionsRow)
+            event.replyEmbeds(buildMainEmbed(), buildChatEmbed())
                     .addActionRow(joinRow)
                     .queue();
         }
@@ -102,16 +95,18 @@ public class PontoonTable {
                         .setTitle("Join Pontoon Table")
                         .setDescription("Select a seat to join")
                         .build();
+
+                SelectionMenu.Builder selectionMenuBuilder = SelectionMenu.create("pontoon-seatSelect");
+
+                for (int i = 0; i < players.length; i++) {
+                    if (players[i] == null) {
+                        selectionMenuBuilder.addOption(Integer.toString(i+1), Integer.toString(i));
+                    }
+                }
+
                 event.replyEmbeds(msg)
                         .setEphemeral(true)
-                        .addActionRow(SelectionMenu.create("pontoon-seat-select")
-                                .addOption("1", "1")
-                                .addOption("2", "2")
-                                .addOption("3", "3")
-                                .addOption("4", "4")
-                                .addOption("5", "5")
-                                .addOption("6", "6")
-                                .build())
+                        .addActionRow(selectionMenuBuilder.build())
                         .queue();
                 break;
             case "pontoon-leave":
@@ -135,9 +130,25 @@ public class PontoonTable {
         updateView();
     }
 
+    /**
+     * Only selection menu for this table is seat selection
+     */
+    public void onSelectionMenu(SelectionMenuEvent event) {
+        int index = Integer.parseInt(event.getValues().get(0));
+        Player player = new Player(event.getMember().getUser().getId(), index + 1, 1000);
+        players[index] = player;
+
+        // Update leave button to active
+        if (joinRow.get(1).isDisabled()) {
+            joinRow.set(1, joinRow.get(1).asEnabled());
+        }
+
+        event.editMessageEmbeds(player.buildPlayerEmbed()).setActionRow(player.getOptions()).queue();
+        updateView();
+    }
+
     private void updateView() {
-        latestHook.editOriginalEmbeds(buildMainEmbed(), buildMessageEmbed())
-                .setActionRow(playerOptionsRow)
+        latestHook.editOriginalEmbeds(buildMainEmbed(), buildChatEmbed())
                 .setActionRow(joinRow)
                 .queue();
     }
@@ -152,7 +163,7 @@ public class PontoonTable {
         return eb.build();
     }
 
-    private MessageEmbed buildMessageEmbed() {
+    private MessageEmbed buildChatEmbed() {
         EmbedBuilder eb = new EmbedBuilder();
 
         eb.setTitle("Chat");

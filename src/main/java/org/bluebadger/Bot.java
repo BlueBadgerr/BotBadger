@@ -65,9 +65,9 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onButtonClick(ButtonClickEvent event) {
-        String[] buttonId = event.getComponentId().split("-");
+        String id = event.getComponentId().split("-")[0];
 
-        switch (buttonId[0]) {
+        switch (id) {
             case "summoner":
                 summoner.onButtonClick(event);
                 break;
@@ -81,12 +81,18 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onSelectionMenu(SelectionMenuEvent event) {
-        EmbedBuilder eb = new EmbedBuilder();
-        eb.setTitle("Join Pontoon Table");
-        eb.setDescription(String.format("You have joined seat number %s", event.getValues().get(0)));
-        event.editMessageEmbeds(eb.build())
-                .setActionRow(event.getComponent().asDisabled())
-                .queue();
+        String id = event.getComponentId().split("-")[0];
+
+        switch (id) {
+            case "summoner":
+                // Do nothing
+                break;
+            case "pontoon":
+                pontoonTable.onSelectionMenu(event);
+                break;
+            default:
+                System.out.printf("Unknown button press %s%n", event.getComponentId());
+        }
     }
 
     @Override
