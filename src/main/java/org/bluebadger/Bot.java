@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.bluebadger.pontoon.PontoonTable;
 import org.bluebadger.libraries.Database;
 import org.bluebadger.summoner.Summoner;
-import org.jetbrains.annotations.NotNull;
 
 import javax.security.auth.login.LoginException;
 import java.sql.*;
@@ -24,6 +23,8 @@ import java.sql.*;
 public class Bot extends ListenerAdapter {
     private static Summoner summoner;
     private static PontoonTable pontoonTable;
+
+    private static String pontoonChannelId = null;
 
     public static void main(String[] args) throws LoginException, SQLException {
         String token = System.getenv("TOKEN");
@@ -54,6 +55,7 @@ public class Bot extends ListenerAdapter {
                 summoner.onSlashCommand(event);
                 break;
             case "pontoon":
+                pontoonChannelId = event.getChannel().getId();
                 pontoonTable.onSlashCommand(event);
                 break;
             default:
@@ -89,6 +91,12 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
+
+        if (pontoonChannelId != null && event.getChannel().getName().equals(pontoonChannelId)) {
+            pontoonTable.onMessageReceived(event);
+            return;
+        }
+
         Message msg = event.getMessage();
         MessageChannel channel = event.getChannel();
 

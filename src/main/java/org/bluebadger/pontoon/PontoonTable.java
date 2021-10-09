@@ -1,18 +1,22 @@
 package org.bluebadger.pontoon;
 
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.Component;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
+import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
 public class PontoonTable {
     private static final int MAX_PLAYERS = 6;
@@ -20,6 +24,7 @@ public class PontoonTable {
     private final Database database;
     private final List<Component> playerOptionsRow = new ArrayList<>();
     private final List<Component> joinRow = new ArrayList<>();
+    private final Queue<String> messages = new CircularFifoQueue<>(3);
 
     private Shuffler shuffler = new Shuffler();
     private Player[] players = new Player[MAX_PLAYERS];
@@ -70,7 +75,7 @@ public class PontoonTable {
         if (event.getName().equals("pontoon")) {
             latestHook = event.getHook();
 
-            event.replyEmbeds(buildEmbed())
+            event.replyEmbeds(buildMainEmbed(), buildMessageEmbed())
                     .addActionRow(playerOptionsRow)
                     .addActionRow(joinRow)
                     .queue();
@@ -115,16 +120,46 @@ public class PontoonTable {
         }
 
         if (!event.getComponentId().equals("pontoon-join")) {
-            event.editMessageEmbeds(buildEmbed()).queue();
+            event.editMessageEmbeds(buildMainEmbed()).queue();
         }
     }
 
-    private MessageEmbed buildEmbed() {
+    public void onMessageReceived(MessageReceivedEvent event) {
+        if (event.isWebhookMessage()) {
+            return;
+        }
+        // Delete any messages and add it to the message block instead
+        Message message = event.getMessage();
+        messages.add(message.getContentDisplay());
+        message.delete().queue();
+        updateView();
+    }
+
+    private void updateView() {
+        latestHook.editOriginalEmbeds(buildMainEmbed(), buildMessageEmbed())
+                .setActionRow(playerOptionsRow)
+                .setActionRow(joinRow)
+                .queue();
+    }
+
+    private MessageEmbed buildMainEmbed() {
         EmbedBuilder eb = new EmbedBuilder();
 
         eb.setTitle("Pontoon Table");
         eb.setDescription(description);
         // TODO: Display table
+
+        return eb.build();
+    }
+
+    private MessageEmbed buildMessageEmbed() {
+        EmbedBuilder eb = new EmbedBuilder();
+
+        eb.setTitle("Chat");
+
+        StringBuilder sb = new StringBuilder();
+        messages.forEach(message -> sb.append(String.format("%s%n", message)));
+        eb.setDescription(sb.toString());
 
         return eb.build();
     }
