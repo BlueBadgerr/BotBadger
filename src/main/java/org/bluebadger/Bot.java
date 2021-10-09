@@ -21,6 +21,7 @@ import javax.security.auth.login.LoginException;
 import java.sql.*;
 
 public class Bot extends ListenerAdapter {
+    private static final boolean NEW_SLASH_COMMAND = false;
     private static Summoner summoner;
     private static PontoonTable pontoonTable;
 
@@ -42,10 +43,12 @@ public class Bot extends ListenerAdapter {
         pontoonTable = new PontoonTable();
 
         // This can take up to 1 hour to show up in the client
-        jda.updateCommands()
-                .addCommands(new CommandData("summon-heroes", "Performs a 10x summon"))
-                .addCommands(new CommandData("pontoon", "Play a game of Pontoon"))
-                .queue();
+        if (NEW_SLASH_COMMAND) {
+            jda.updateCommands()
+                    .addCommands(new CommandData("summon-heroes", "Performs a 10x summon"))
+                    .addCommands(new CommandData("pontoon", "Play a game of Pontoon"))
+                    .queue();
+        }
     }
 
     @Override
@@ -98,7 +101,7 @@ public class Bot extends ListenerAdapter {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
 
-        if (pontoonChannelId != null && event.getChannel().getName().equals(pontoonChannelId)) {
+        if (pontoonChannelId != null && event.getChannel().getId().equals(pontoonChannelId)) {
             pontoonTable.onMessageReceived(event);
             return;
         }
