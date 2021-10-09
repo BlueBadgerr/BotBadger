@@ -119,13 +119,16 @@ public class PontoonTable {
         }
     }
 
+    /**
+     * Only message we are expecting is talking
+     */
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isWebhookMessage()) {
             return;
         }
         // Delete any messages and add it to the message block instead
         Message message = event.getMessage();
-        messages.add(message.getContentDisplay());
+        messages.add(String.format("%s: %s", message.getMember().getEffectiveName(), message.getContentDisplay()));
         message.delete().queue();
         updateView();
     }
