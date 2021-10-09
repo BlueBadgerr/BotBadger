@@ -55,7 +55,7 @@ public class Bot extends ListenerAdapter {
     public void onSlashCommand(SlashCommandEvent event) {
         switch (event.getName()) {
             case "summon-heroes":
-                summoner.onSlashCommand(event);
+                summoner.apply(event);
                 break;
             case "pontoon":
                 pontoonChannelId = event.getChannel().getId();
@@ -72,7 +72,7 @@ public class Bot extends ListenerAdapter {
 
         switch (id) {
             case "summoner":
-                summoner.onButtonClick(event);
+                summoner.apply(event);
                 break;
             case "pontoon":
                 pontoonTable.onButtonClick(event);

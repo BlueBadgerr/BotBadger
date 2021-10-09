@@ -3,12 +3,15 @@ package org.bluebadger.summoner;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
+import org.bluebadger.interfaces.Action;
 
 import java.util.Random;
 
-public class Summoner {
+public class Summoner implements Action {
     private static final String[] HERO_3_STAR = {"Plitvice", "Lapice", "Marina", "Arabelle", "Eva", "Bari", "Lupina",
             "Lahn", "Eugene", "Tinia", "Vishuvac", "Nari", "Bianca", "Oghma", "Alef", "Miya", "Future Princess",
             "Garam", "Beth", "Rue", "Gabriel", "Lynn", "Future Knight", "Veronica", "Noxia", "Mayreel", "Mk.99",
@@ -33,7 +36,8 @@ public class Summoner {
 
     public Summoner() {}
 
-    public void onSlashCommand(SlashCommandEvent event) {
+    @Override
+    public void apply(SlashCommandEvent event) {
         if (event.getName().equals("summon-heroes")) {
             EmbedBuilder eb = new EmbedBuilder();
             eb.setTitle("10x Summon Result");
@@ -48,8 +52,8 @@ public class Summoner {
             event.replyEmbeds(eb.build()).addActionRow(Button.primary(REROLL_BUTTON_ID, "Roll again")).queue();
         }
     }
-
-    public void onButtonClick(ButtonClickEvent event) {
+    @Override
+    public void apply(ButtonClickEvent event) {
         if (event.getComponentId().equals(REROLL_BUTTON_ID)) {
             MessageEmbed msg = event.getMessage().getEmbeds().get(0);
 
@@ -110,6 +114,16 @@ public class Summoner {
         summonResult.totalWhiteBox = totalWhiteBox;
 
         return summonResult;
+    }
+
+    @Override
+    public void apply(SelectionMenuEvent event) {
+        // do nothing
+    }
+
+    @Override
+    public void apply(MessageReceivedEvent event) {
+        // do nothing
     }
 
     private static class SummonResult {
