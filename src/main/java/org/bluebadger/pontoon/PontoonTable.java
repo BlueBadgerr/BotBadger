@@ -60,13 +60,11 @@ public class PontoonTable implements Action {
         database = Database.getInstance();
     }
 
-    @Override
     public void apply(SlashCommandEvent event) {
         viewManager.setHook(event.getHook());
         viewManager.update(event);
     }
 
-    @Override
     public void apply(ButtonClickEvent event) {
         switch (event.getComponentId()) {
             case "pontoon-hit":
@@ -104,7 +102,6 @@ public class PontoonTable implements Action {
     /**
      * Only message we are expecting is talking
      */
-    @Override
     public void apply(MessageReceivedEvent event) {
         if (event.isWebhookMessage()) {
             return;
