@@ -13,17 +13,19 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.bluebadger.interfaces.Action;
 import org.bluebadger.pontoon.PontoonTable;
 import org.bluebadger.libraries.Database;
 import org.bluebadger.summoner.Summoner;
 
 import javax.security.auth.login.LoginException;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Bot extends ListenerAdapter {
     private static final boolean NEW_SLASH_COMMAND = false;
-    private static Summoner summoner;
-    private static PontoonTable pontoonTable;
+    private static final Map<String, Action> actionMap = new HashMap<>();
 
     private static String pontoonChannelId = null;
 
@@ -39,8 +41,8 @@ public class Bot extends ListenerAdapter {
         Database.connect(System.getenv("JDBC_DATABASE_URL"));
 
         // Bot action classes
-        summoner = new Summoner();
-        pontoonTable = new PontoonTable();
+        actionMap.put("summoner", new Summoner());
+        actionMap.put("pontoon", new PontoonTable());
 
         // This can take up to 1 hour to show up in the client
         if (NEW_SLASH_COMMAND) {
@@ -55,11 +57,11 @@ public class Bot extends ListenerAdapter {
     public void onSlashCommand(SlashCommandEvent event) {
         switch (event.getName()) {
             case "summon-heroes":
-                summoner.apply(event);
+                actionMap.get("summoner").apply(event);
                 break;
             case "pontoon":
                 pontoonChannelId = event.getChannel().getId();
-                pontoonTable.apply(event);
+                actionMap.get("pontoon").apply(event);
                 break;
             default:
                 System.out.printf("Unknown slash command %s%n", event.getName());
@@ -70,15 +72,10 @@ public class Bot extends ListenerAdapter {
     public void onButtonClick(ButtonClickEvent event) {
         String id = event.getComponentId().split("-")[0];
 
-        switch (id) {
-            case "summoner":
-                summoner.apply(event);
-                break;
-            case "pontoon":
-                pontoonTable.apply(event);
-                break;
-            default:
-                System.out.printf("Unknown button press %s%n", event.getComponentId());
+        if (actionMap.containsKey(id)) {
+            actionMap.get(id).apply(event);
+        } else {
+            System.out.println("Unrecognised button pressed: " + id);
         }
     }
 
@@ -86,15 +83,10 @@ public class Bot extends ListenerAdapter {
     public void onSelectionMenu(SelectionMenuEvent event) {
         String id = event.getComponentId().split("-")[0];
 
-        switch (id) {
-            case "summoner":
-                // Do nothing
-                break;
-            case "pontoon":
-                pontoonTable.apply(event);
-                break;
-            default:
-                System.out.printf("Unknown button press %s%n", event.getComponentId());
+        if (actionMap.containsKey(id)) {
+            actionMap.get(id).apply(event);
+        } else {
+            System.out.println("Unrecognised selection menu: " + id);
         }
     }
 
@@ -102,23 +94,8 @@ public class Bot extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
 
         if (pontoonChannelId != null && event.getChannel().getId().equals(pontoonChannelId)) {
-            pontoonTable.apply(event);
+            actionMap.get("pontoon").apply(event);
             return;
-        }
-
-        Message msg = event.getMessage();
-        MessageChannel channel = event.getChannel();
-
-        if (msg.getContentRaw().equals("add")) {
-            pontoonTable.add(msg.getMember().getUser().getId());
-        }
-
-        if (msg.getContentRaw().equals("get")) {
-            channel.sendMessage(pontoonTable.get(msg.getMember().getUser().getId()).toString()).queue();
-        }
-
-        if (msg.getContentRaw().equals("draw")) {
-            channel.sendMessage(pontoonTable.draw()).queue();
         }
     }
 }
