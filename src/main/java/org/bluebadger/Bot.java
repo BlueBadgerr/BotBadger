@@ -59,7 +59,7 @@ public class Bot extends ListenerAdapter {
                 break;
             case "pontoon":
                 pontoonChannelId = event.getChannel().getId();
-                pontoonTable.onSlashCommand(event);
+                pontoonTable.apply(event);
                 break;
             default:
                 System.out.printf("Unknown slash command %s%n", event.getName());
@@ -75,7 +75,7 @@ public class Bot extends ListenerAdapter {
                 summoner.apply(event);
                 break;
             case "pontoon":
-                pontoonTable.onButtonClick(event);
+                pontoonTable.apply(event);
                 break;
             default:
                 System.out.printf("Unknown button press %s%n", event.getComponentId());
@@ -91,7 +91,7 @@ public class Bot extends ListenerAdapter {
                 // Do nothing
                 break;
             case "pontoon":
-                pontoonTable.onSelectionMenu(event);
+                pontoonTable.apply(event);
                 break;
             default:
                 System.out.printf("Unknown button press %s%n", event.getComponentId());
@@ -102,7 +102,7 @@ public class Bot extends ListenerAdapter {
     public void onMessageReceived(MessageReceivedEvent event) {
 
         if (pontoonChannelId != null && event.getChannel().getId().equals(pontoonChannelId)) {
-            pontoonTable.onMessageReceived(event);
+            pontoonTable.apply(event);
             return;
         }
 

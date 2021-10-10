@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
+import org.bluebadger.interfaces.Action;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
@@ -18,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-public class PontoonTable {
+public class PontoonTable implements Action {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
@@ -65,7 +66,8 @@ public class PontoonTable {
         joinRow.add(Button.danger("pontoon-leave", "Leave").asDisabled());
     }
 
-    public void onSlashCommand(SlashCommandEvent event) {
+    @Override
+    public void apply(SlashCommandEvent event) {
         if (event.getName().equals("pontoon")) {
             latestHook = event.getHook();
 
@@ -75,7 +77,8 @@ public class PontoonTable {
         }
     }
 
-    public void onButtonClick(ButtonClickEvent event) {
+    @Override
+    public void apply(ButtonClickEvent event) {
         switch (event.getComponentId()) {
             case "pontoon-hit":
                 description = "HIT";
@@ -122,7 +125,8 @@ public class PontoonTable {
     /**
      * Only message we are expecting is talking
      */
-    public void onMessageReceived(MessageReceivedEvent event) {
+    @Override
+    public void apply(MessageReceivedEvent event) {
         if (event.isWebhookMessage()) {
             return;
         }
@@ -136,7 +140,7 @@ public class PontoonTable {
     /**
      * Only selection menu for this table is seat selection
      */
-    public void onSelectionMenu(SelectionMenuEvent event) {
+    public void apply(SelectionMenuEvent event) {
         int index = Integer.parseInt(event.getValues().get(0));
         Player player = new Player(event.getMember().getUser().getId(), index + 1, 1000);
         players[index] = player;
