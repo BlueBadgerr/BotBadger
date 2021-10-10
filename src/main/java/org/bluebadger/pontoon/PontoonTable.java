@@ -135,14 +135,6 @@ public class PontoonTable implements Action {
         return String.format("pontoon-%s-%s", viewCategory, buttonId);
     }
 
-    private String getViewCategory(String fullButtonId) {
-        return fullButtonId.split("-")[1];
-    }
-
-    private String getButtonId(String fullButtonId) {
-        return fullButtonId.split("-")[2];
-    }
-
     private class ViewManager {
         public static final String VIEW_CATEGORY = "main";
         private Button joinButton = Button.primary(buttonId(VIEW_CATEGORY, "join"), "Join");
