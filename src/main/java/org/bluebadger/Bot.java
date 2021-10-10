@@ -89,7 +89,6 @@ public class Bot extends ListenerAdapter {
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
-
         if (pontoonChannelId != null && event.getChannel().getId().equals(pontoonChannelId)) {
             actionMap.get("pontoon").apply(event);
             return;
