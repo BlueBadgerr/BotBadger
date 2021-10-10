@@ -15,22 +15,19 @@ import org.bluebadger.interfaces.Action;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 import java.util.Queue;
 
 public class PontoonTable implements Action {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
-    private final List<Button> joinRow = new ArrayList<>();
-    private final Queue<String> messages = new CircularFifoQueue<>(3);
+    private final ViewManager viewManager = new ViewManager();
+    private final Queue<String> chatHistory = new CircularFifoQueue<>(3);
 
     private Shuffler shuffler = new Shuffler();
     private Player[] players = new Player[MAX_PLAYERS];
     private String description = "This is where a pretty picture of the table should go";
-
-    private InteractionHook latestHook;
 
     // Test only
     public void add(String id) {
@@ -61,38 +58,27 @@ public class PontoonTable implements Action {
 
     public PontoonTable() {
         database = Database.getInstance();
-
-        joinRow.add(Button.primary("pontoon-join", "Join"));
-        joinRow.add(Button.danger("pontoon-leave", "Leave").asDisabled());
     }
 
     @Override
     public void apply(SlashCommandEvent event) {
-        if (event.getName().equals("pontoon")) {
-            latestHook = event.getHook();
-
-            event.replyEmbeds(buildMainEmbed(), buildChatEmbed())
-                    .addActionRow(joinRow)
-                    .queue();
-        }
+        viewManager.setHook(event.getHook());
+        viewManager.update(event);
     }
 
     @Override
     public void apply(ButtonClickEvent event) {
         switch (event.getComponentId()) {
             case "pontoon-hit":
-                description = "HIT";
-                break;
             case "pontoon-stand":
-                description = "STAND";
-                break;
             case "pontoon-split":
-                description = "SPLIT";
-                break;
             case "pontoon-surrender":
-                description = "SURRENDER";
+            case "pontoon-main-leave":
+                System.out.println(event.getComponentId());
+                description = event.getComponentId();
+                viewManager.update();
                 break;
-            case "pontoon-join":
+            case "pontoon-main-join":
                 description = "JOIN";
                 MessageEmbed msg = new EmbedBuilder()
                         .setTitle("Join Pontoon Table")
@@ -112,13 +98,6 @@ public class PontoonTable implements Action {
                         .addActionRow(selectionMenuBuilder.build())
                         .queue();
                 break;
-            case "pontoon-leave":
-                description = "LEAVE";
-                break;
-        }
-
-        if (!event.getComponentId().equals("pontoon-join")) {
-            event.editMessageEmbeds(buildMainEmbed()).queue();
         }
     }
 
@@ -132,9 +111,9 @@ public class PontoonTable implements Action {
         }
         // Delete any messages and add it to the message block instead
         Message message = event.getMessage();
-        messages.add(String.format("%s: %s", message.getMember().getEffectiveName(), message.getContentDisplay()));
+        chatHistory.add(String.format("%s: %s", message.getMember().getEffectiveName(), message.getContentDisplay()));
         message.delete().queue();
-        updateView();
+        viewManager.update();
     }
 
     /**
@@ -146,39 +125,94 @@ public class PontoonTable implements Action {
         players[index] = player;
 
         // Update leave button to active
-        if (joinRow.get(1).isDisabled()) {
-            joinRow.set(1, joinRow.get(1).asEnabled());
-        }
+        viewManager.enableLeave(true);
 
         event.editMessageEmbeds(player.buildPlayerEmbed()).setActionRow(player.getOptions()).queue();
-        updateView();
+        viewManager.update();
     }
 
-    private void updateView() {
-        latestHook.editOriginalEmbeds(buildMainEmbed(), buildChatEmbed())
-                .setActionRow(joinRow)
-                .queue();
+    private String buttonId(String viewCategory, String buttonId) {
+        return String.format("pontoon-%s-%s", viewCategory, buttonId);
     }
 
-    private MessageEmbed buildMainEmbed() {
-        EmbedBuilder eb = new EmbedBuilder();
-
-        eb.setTitle("Pontoon Table");
-        eb.setDescription(description);
-        // TODO: Display table
-
-        return eb.build();
+    private String getViewCategory(String fullButtonId) {
+        return fullButtonId.split("-")[1];
     }
 
-    private MessageEmbed buildChatEmbed() {
-        EmbedBuilder eb = new EmbedBuilder();
+    private String getButtonId(String fullButtonId) {
+        return fullButtonId.split("-")[2];
+    }
 
-        eb.setTitle("Chat");
+    private class ViewManager {
+        public static final String VIEW_CATEGORY = "main";
+        private Button joinButton = Button.primary(buttonId(VIEW_CATEGORY, "join"), "Join");
+        private Button leaveButton = Button.danger(buttonId(VIEW_CATEGORY, "leave"), "Leave");
 
-        StringBuilder sb = new StringBuilder();
-        messages.forEach(message -> sb.append(String.format("%s%n", message)));
-        eb.setDescription(sb.toString());
+        private InteractionHook hook;
 
-        return eb.build();
+        public ViewManager() {
+            leaveButton = leaveButton.asDisabled();
+        }
+
+        public void setHook(InteractionHook hook) {
+            this.hook = hook;
+        }
+
+        public void update() {
+            hook.editOriginalEmbeds(buildMainEmbed(), buildChatEmbed())
+                    .setActionRow(Arrays.asList(joinButton, leaveButton))
+                    .queue();
+        }
+
+        /**
+         * First call we want to directly reply to event instead of using hook
+         */
+        public void update(SlashCommandEvent event) {
+            event.replyEmbeds(buildMainEmbed(), buildChatEmbed())
+                    .addActionRow(Arrays.asList(joinButton, leaveButton))
+                    .queue();
+        }
+
+        public void enableJoin(boolean enable) {
+            if (enable && joinButton.isDisabled()) {
+                joinButton = joinButton.asEnabled();
+            }
+
+            if (!enable && !joinButton.isDisabled()) {
+                joinButton = joinButton.asDisabled();
+            }
+        }
+
+        public void enableLeave(boolean enable) {
+            if (enable && leaveButton.isDisabled()) {
+                leaveButton = leaveButton.asEnabled();
+            }
+
+            if (!enable && !leaveButton.isDisabled()) {
+                leaveButton = leaveButton.asDisabled();
+            }
+        }
+
+        private MessageEmbed buildMainEmbed() {
+            EmbedBuilder eb = new EmbedBuilder();
+
+            eb.setTitle("Pontoon Table");
+            eb.setDescription(description);
+            // TODO: Display table
+
+            return eb.build();
+        }
+
+        private MessageEmbed buildChatEmbed() {
+            EmbedBuilder eb = new EmbedBuilder();
+
+            eb.setTitle("Chat");
+
+            StringBuilder sb = new StringBuilder();
+            chatHistory.forEach(message -> sb.append(String.format("%s%n", message)));
+            eb.setDescription(sb.toString());
+
+            return eb.build();
+        }
     }
 }
