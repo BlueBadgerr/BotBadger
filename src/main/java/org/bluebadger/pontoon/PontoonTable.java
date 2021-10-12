@@ -17,6 +17,7 @@ import org.bluebadger.libraries.Database;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Queue;
+import java.util.regex.Pattern;
 
 public class PontoonTable implements Action {
     private static final int MAX_PLAYERS = 6;
@@ -66,36 +67,40 @@ public class PontoonTable implements Action {
     }
 
     public void apply(ButtonClickEvent event) {
-        switch (event.getComponentId()) {
-            case "pontoon-hit":
-            case "pontoon-stand":
-            case "pontoon-split":
-            case "pontoon-surrender":
-            case "pontoon-main-leave":
-                System.out.println(event.getComponentId());
-                description = event.getComponentId();
-                viewManager.update();
-                break;
-            case "pontoon-main-join":
-                description = "JOIN";
-                MessageEmbed msg = new EmbedBuilder()
-                        .setTitle("Join Pontoon Table")
-                        .setDescription("Select a seat to join")
-                        .build();
+        Pattern pattern = Pattern.compile(".+-\\d-.+");
+        String target = event.getComponentId().split("-")[1];
 
-                SelectionMenu.Builder selectionMenuBuilder = SelectionMenu.create("pontoon-seatSelect");
+        if (pattern.matcher(target).matches()) {
+            int index = Integer.parseInt(target);
+            players[index].onButtonClick(event);
+        } else {
+            switch (event.getComponentId()) {
+                case "pontoon-main-join":
+                    description = "JOIN";
+                    MessageEmbed msg = new EmbedBuilder()
+                            .setTitle("Join Pontoon Table")
+                            .setDescription("Select a seat to join")
+                            .build();
 
-                for (int i = 0; i < players.length; i++) {
-                    if (players[i] == null) {
-                        selectionMenuBuilder.addOption(Integer.toString(i+1), Integer.toString(i));
+                    SelectionMenu.Builder selectionMenuBuilder = SelectionMenu.create("pontoon-seatSelect");
+
+                    for (int i = 0; i < players.length; i++) {
+                        if (players[i] == null) {
+                            selectionMenuBuilder.addOption(Integer.toString(i+1), Integer.toString(i));
+                        }
                     }
-                }
 
-                event.replyEmbeds(msg)
-                        .setEphemeral(true)
-                        .addActionRow(selectionMenuBuilder.build())
-                        .queue();
-                break;
+                    event.replyEmbeds(msg)
+                            .setEphemeral(true)
+                            .addActionRow(selectionMenuBuilder.build())
+                            .queue();
+                    break;
+                case "pontoon-main-leave":
+                    System.out.println(event.getComponentId());
+                    description = event.getComponentId();
+                    viewManager.update();
+                    break;
+            }
         }
     }
 
