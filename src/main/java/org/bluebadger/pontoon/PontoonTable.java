@@ -67,7 +67,7 @@ public class PontoonTable implements Action {
     }
 
     public void apply(ButtonClickEvent event) {
-        Pattern pattern = Pattern.compile(".+-\\d-.+");
+        Pattern pattern = Pattern.compile("\\d");
         String target = event.getComponentId().split("-")[1];
 
         if (pattern.matcher(target).matches()) {
@@ -123,7 +123,7 @@ public class PontoonTable implements Action {
      */
     public void apply(SelectionMenuEvent event) {
         int index = Integer.parseInt(event.getValues().get(0));
-        Player player = new Player(event.getMember().getUser().getId(), index + 1, 1000);
+        Player player = new Player(event.getMember().getUser().getId(), index, 1000);
         players[index] = player;
 
         player.onSelectionMenu(event);

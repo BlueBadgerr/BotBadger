@@ -32,23 +32,24 @@ public class Player {
     public void onButtonClick(ButtonClickEvent event) {
         // Extract the button option
         String optionSelected = event.getComponentId().split("-")[2];
+        event.editMessageEmbeds(buildMessageEmbed(optionSelected)).setActionRow(buildOptions()).queue();
     }
 
     /**
      * Receive any selection menu event.
      */
     public void onSelectionMenu(SelectionMenuEvent event) {
-        event.editMessageEmbeds(buildMessageEmbed()).setActionRow(buildOptions()).queue();
+        event.editMessageEmbeds(buildMessageEmbed("Select your action")).setActionRow(buildOptions()).queue();
     }
 
     private String buildButtonId(String option) {
         return String.format("pontoon-%d-%s", playerIndex, option);
     }
 
-    private MessageEmbed buildMessageEmbed() {
+    private MessageEmbed buildMessageEmbed(String message) {
         return new EmbedBuilder()
                 .setTitle(String.format("Seat %d", playerIndex + 1))
-                .setDescription("Select your action")
+                .setDescription(message)
                 .build();
     }
 
