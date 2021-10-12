@@ -121,10 +121,10 @@ public class PontoonTable implements Action {
         Player player = new Player(event.getMember().getUser().getId(), index + 1, 1000);
         players[index] = player;
 
+        player.onSelectionMenu(event);
+
         // Update leave button to active
         viewManager.enableLeave(true);
-
-        event.editMessageEmbeds(player.buildPlayerEmbed()).setActionRow(player.getOptions()).queue();
         viewManager.update();
     }
 

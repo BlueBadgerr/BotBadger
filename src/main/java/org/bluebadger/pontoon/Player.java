@@ -2,6 +2,8 @@ package org.bluebadger.pontoon;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
+import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.interactions.components.Button;
 import org.bluebadger.libraries.Card;
 
@@ -10,31 +12,47 @@ import java.util.List;
 
 public class Player {
     private final String userId;
+    private final int playerIndex;
     private final List<Button> options = new ArrayList<>();
 
-    private int seatNumber;
     private long gold;
     private Card[] cards = new Card[2];
 
-    public Player(String userId, int seatNumber, long gold) {
+    public Player(String userId, int playerIndex, long gold) {
         this.userId = userId;
-        this.seatNumber = seatNumber;
+        this.playerIndex = playerIndex;
         this.gold = gold;
 
-        options.add(Button.danger("pontoon-hit", "Hit"));
-        options.add(Button.success("pontoon-stand", "Stand"));
-        options.add(Button.primary("pontoon-split", "Split"));
-        options.add(Button.secondary("pontoon-surrender", "Surrender"));
+        options.add(Button.danger(buildButtonId("hit"), "Hit"));
+        options.add(Button.success(buildButtonId("stand"), "Stand"));
+        options.add(Button.primary(buildButtonId("split"), "Split"));
+        options.add(Button.secondary(buildButtonId("surrender"), "Surrender"));
     }
 
-    public MessageEmbed buildPlayerEmbed() {
+    public void onButtonClick(ButtonClickEvent event) {
+        // Extract the button option
+        String optionSelected = event.getComponentId().split("-")[2];
+    }
+
+    /**
+     * Receive any selection menu event.
+     */
+    public void onSelectionMenu(SelectionMenuEvent event) {
+        event.editMessageEmbeds(buildMessageEmbed()).setActionRow(buildOptions()).queue();
+    }
+
+    private String buildButtonId(String option) {
+        return String.format("pontoon-%d-%s", playerIndex, option);
+    }
+
+    private MessageEmbed buildMessageEmbed() {
         return new EmbedBuilder()
-                .setTitle(String.format("Seat %d", seatNumber))
+                .setTitle(String.format("Seat %d", playerIndex + 1))
                 .setDescription("Select your action")
                 .build();
     }
 
-    public List<Button> getOptions() {
+    private List<Button> buildOptions() {
         return options;
     }
 }
