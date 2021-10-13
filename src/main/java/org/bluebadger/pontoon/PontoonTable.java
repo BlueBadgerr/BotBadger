@@ -15,6 +15,8 @@ import org.bluebadger.interfaces.Action;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.regex.Pattern;
 
@@ -73,33 +75,25 @@ public class PontoonTable implements Action {
             int index = Integer.parseInt(target);
             players[index].onButtonClick(event);
         } else {
-            switch (event.getComponentId()) {
-                case "pontoon-main-join":
-                    description = "JOIN";
-                    MessageEmbed msg = new EmbedBuilder()
-                            .setTitle("Join Pontoon Table")
-                            .setDescription("Select a seat to join")
-                            .build();
+            // The only button remaining is join
+            description = "JOIN";
+            MessageEmbed msg = new EmbedBuilder()
+                    .setTitle("Join Pontoon Table")
+                    .setDescription("Select a seat to join")
+                    .build();
 
-                    SelectionMenu.Builder selectionMenuBuilder = SelectionMenu.create("pontoon-seatSelect");
+            SelectionMenu.Builder selectionMenuBuilder = SelectionMenu.create("pontoon-seatSelect");
 
-                    for (int i = 0; i < players.length; i++) {
-                        if (players[i] == null) {
-                            selectionMenuBuilder.addOption(Integer.toString(i+1), Integer.toString(i));
-                        }
-                    }
-
-                    event.replyEmbeds(msg)
-                            .setEphemeral(true)
-                            .addActionRow(selectionMenuBuilder.build())
-                            .queue();
-                    break;
-                case "pontoon-main-leave":
-                    System.out.println(event.getComponentId());
-                    description = event.getComponentId();
-                    viewManager.update();
-                    break;
+            for (int i = 0; i < players.length; i++) {
+                if (players[i] == null) {
+                    selectionMenuBuilder.addOption(Integer.toString(i+1), Integer.toString(i));
+                }
             }
+
+            event.replyEmbeds(msg)
+                    .setEphemeral(true)
+                    .addActionRow(selectionMenuBuilder.build())
+                    .queue();
         }
     }
 
@@ -126,6 +120,11 @@ public class PontoonTable implements Action {
         players[index] = player;
 
         player.onSelectionMenu(event);
+
+        if (Arrays.stream(players).filter(Objects::nonNull).count() == MAX_PLAYERS) {
+            viewManager.enableJoin(false);
+        }
+
         viewManager.update();
     }
 
