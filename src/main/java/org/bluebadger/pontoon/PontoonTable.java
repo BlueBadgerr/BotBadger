@@ -15,7 +15,6 @@ import org.bluebadger.interfaces.Action;
 import org.bluebadger.libraries.Database;
 
 import java.sql.SQLException;
-import java.util.Arrays;
 import java.util.Queue;
 import java.util.regex.Pattern;
 
@@ -127,9 +126,6 @@ public class PontoonTable implements Action {
         players[index] = player;
 
         player.onSelectionMenu(event);
-
-        // Update leave button to active
-        viewManager.enableLeave(true);
         viewManager.update();
     }
 
@@ -140,13 +136,8 @@ public class PontoonTable implements Action {
     private class ViewManager {
         public static final String VIEW_CATEGORY = "main";
         private Button joinButton = Button.primary(buttonId(VIEW_CATEGORY, "join"), "Join");
-        private Button leaveButton = Button.danger(buttonId(VIEW_CATEGORY, "leave"), "Leave");
 
         private InteractionHook hook;
-
-        public ViewManager() {
-            leaveButton = leaveButton.asDisabled();
-        }
 
         public void setHook(InteractionHook hook) {
             this.hook = hook;
@@ -154,7 +145,7 @@ public class PontoonTable implements Action {
 
         public void update() {
             hook.editOriginalEmbeds(buildMainEmbed(), buildChatEmbed())
-                    .setActionRow(Arrays.asList(joinButton, leaveButton))
+                    .setActionRow(joinButton)
                     .queue();
         }
 
@@ -163,7 +154,7 @@ public class PontoonTable implements Action {
          */
         public void update(SlashCommandEvent event) {
             event.replyEmbeds(buildMainEmbed(), buildChatEmbed())
-                    .addActionRow(Arrays.asList(joinButton, leaveButton))
+                    .addActionRow(joinButton)
                     .queue();
         }
 
@@ -174,16 +165,6 @@ public class PontoonTable implements Action {
 
             if (!enable && !joinButton.isDisabled()) {
                 joinButton = joinButton.asDisabled();
-            }
-        }
-
-        public void enableLeave(boolean enable) {
-            if (enable && leaveButton.isDisabled()) {
-                leaveButton = leaveButton.asEnabled();
-            }
-
-            if (!enable && !leaveButton.isDisabled()) {
-                leaveButton = leaveButton.asDisabled();
             }
         }
 
