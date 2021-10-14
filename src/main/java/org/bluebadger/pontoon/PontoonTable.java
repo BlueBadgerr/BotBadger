@@ -7,8 +7,6 @@ import net.dv8tion.jda.api.events.interaction.ButtonClickEvent;
 import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.api.interactions.InteractionHook;
-import net.dv8tion.jda.api.interactions.components.Button;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
 import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bluebadger.interfaces.Action;
@@ -24,12 +22,10 @@ public class PontoonTable implements Action {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
-    private final ViewManager viewManager = new ViewManager();
-    private final Queue<String> chatHistory = new CircularFifoQueue<>(3);
+    private final View view = new View();
 
     private Shuffler shuffler = new Shuffler();
     private Player[] players = new Player[MAX_PLAYERS];
-    private String description = "This is where a pretty picture of the table should go";
 
     // Test only
     public void add(String id) {
@@ -63,8 +59,8 @@ public class PontoonTable implements Action {
     }
 
     public void apply(SlashCommandEvent event) {
-        viewManager.setHook(event.getHook());
-        viewManager.update(event);
+        view.setHook(event.getHook());
+        view.update(event);
     }
 
     public void apply(ButtonClickEvent event) {
@@ -76,7 +72,8 @@ public class PontoonTable implements Action {
             players[index].onButtonClick(event);
         } else {
             // The only button remaining is join
-            description = "JOIN";
+            view.updateDescription("New player joined");
+
             MessageEmbed msg = new EmbedBuilder()
                     .setTitle("Join Pontoon Table")
                     .setDescription("Select a seat to join")
@@ -106,9 +103,9 @@ public class PontoonTable implements Action {
         }
         // Delete any messages and add it to the message block instead
         Message message = event.getMessage();
-        chatHistory.add(String.format("%s: %s", message.getMember().getEffectiveName(), message.getContentDisplay()));
+        view.appendChat(String.format("%s: %s", message.getMember().getEffectiveName(), message.getContentDisplay()));
         message.delete().queue();
-        viewManager.update();
+        view.update();
     }
 
     /**
@@ -122,71 +119,9 @@ public class PontoonTable implements Action {
         player.onSelectionMenu(event);
 
         if (Arrays.stream(players).filter(Objects::nonNull).count() == MAX_PLAYERS) {
-            viewManager.enableJoin(false);
+            view.enableJoin(false);
         }
 
-        viewManager.update();
-    }
-
-    private String buttonId(String viewCategory, String buttonId) {
-        return String.format("pontoon-%s-%s", viewCategory, buttonId);
-    }
-
-    private class ViewManager {
-        public static final String VIEW_CATEGORY = "main";
-        private Button joinButton = Button.primary(buttonId(VIEW_CATEGORY, "join"), "Join");
-
-        private InteractionHook hook;
-
-        public void setHook(InteractionHook hook) {
-            this.hook = hook;
-        }
-
-        public void update() {
-            hook.editOriginalEmbeds(buildMainEmbed(), buildChatEmbed())
-                    .setActionRow(joinButton)
-                    .queue();
-        }
-
-        /**
-         * First call we want to directly reply to event instead of using hook
-         */
-        public void update(SlashCommandEvent event) {
-            event.replyEmbeds(buildMainEmbed(), buildChatEmbed())
-                    .addActionRow(joinButton)
-                    .queue();
-        }
-
-        public void enableJoin(boolean enable) {
-            if (enable && joinButton.isDisabled()) {
-                joinButton = joinButton.asEnabled();
-            }
-
-            if (!enable && !joinButton.isDisabled()) {
-                joinButton = joinButton.asDisabled();
-            }
-        }
-
-        private MessageEmbed buildMainEmbed() {
-            EmbedBuilder eb = new EmbedBuilder();
-
-            eb.setTitle("Pontoon Table");
-            eb.setDescription(description);
-            // TODO: Display table
-
-            return eb.build();
-        }
-
-        private MessageEmbed buildChatEmbed() {
-            EmbedBuilder eb = new EmbedBuilder();
-
-            eb.setTitle("Chat");
-
-            StringBuilder sb = new StringBuilder();
-            chatHistory.forEach(message -> sb.append(String.format("%s%n", message)));
-            eb.setDescription(sb.toString());
-
-            return eb.build();
-        }
+        view.update();
     }
 }
