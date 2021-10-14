@@ -8,27 +8,26 @@ import net.dv8tion.jda.api.events.interaction.SelectionMenuEvent;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.components.selections.SelectionMenu;
-import org.apache.commons.collections4.queue.CircularFifoQueue;
 import org.bluebadger.interfaces.Action;
 import org.bluebadger.libraries.Database;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Queue;
 import java.util.regex.Pattern;
 
 public class PontoonTable implements Action {
     private static final int MAX_PLAYERS = 6;
 
     private final Database database;
-    private final View view = new View();
+    private final View view;
+    private final Game game;
 
-    private Shuffler shuffler = new Shuffler();
     private Player[] players = new Player[MAX_PLAYERS];
 
     public PontoonTable() {
         database = Database.getInstance();
+        this.view = new View();
+        this.game = new Game(view);
     }
 
     public void apply(SlashCommandEvent event) {
@@ -88,6 +87,7 @@ public class PontoonTable implements Action {
         int index = Integer.parseInt(event.getValues().get(0));
         Player player = new Player(event.getMember().getUser().getId(), index);
         players[index] = player;
+        game.addPlayer(player);
 
         player.onSelectionMenu(event);
 
