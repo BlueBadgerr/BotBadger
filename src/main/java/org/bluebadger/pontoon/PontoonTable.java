@@ -86,7 +86,7 @@ public class PontoonTable implements Action {
      */
     public void apply(SelectionMenuEvent event) {
         int index = Integer.parseInt(event.getValues().get(0));
-        Player player = new Player(event.getMember().getUser().getId(), index, 1000);
+        Player player = new Player(event.getMember().getUser().getId(), index);
         players[index] = player;
 
         player.onSelectionMenu(event);

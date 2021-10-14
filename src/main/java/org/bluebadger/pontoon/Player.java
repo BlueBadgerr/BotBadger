@@ -17,13 +17,9 @@ public class Player {
     private final List<Button> options = new ArrayList<>();
     private final Button exitButton;
 
-    private long gold;
-    private Card[] cards = new Card[2];
-
-    public Player(String userId, int playerIndex, long gold) {
+    public Player(String userId, int playerIndex) {
         this.userId = userId;
         this.playerIndex = playerIndex;
-        this.gold = gold;
 
         options.add(Button.danger(buildButtonId("hit"), "Hit"));
         options.add(Button.success(buildButtonId("stand"), "Stand"));
